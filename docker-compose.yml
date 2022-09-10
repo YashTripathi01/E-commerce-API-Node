@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+
+    db:
+      image: mongo
+      container_name: e-commerce-mongodb
+      ports:
+          - "27018:27017"
+      networks:
+          - e-commerce
+      volumes:
+          - e-commerce-mongo:/data/db
+      healthcheck:
+          test: "exit 0"
+
+    backend:
+        build: 
+          context: ./backend
+          dockerfile: Dockerfile
+        container_name: e-commerce-backend
+        ports:
+          - 5000:5000
+        networks:
+          - e-commerce
+        volumes:
+          - ./backend:/app
+        depends_on: 
+          db:
+            condition: service_healthy
+
+networks:
+
+    e-commerce:
+        driver: bridge
+
+volumes:
+    e-commerce-mongo:
