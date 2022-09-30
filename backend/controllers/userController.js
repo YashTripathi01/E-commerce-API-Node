@@ -10,8 +10,10 @@ const getAllUsers = async (req, res) => {
   try {
     const query = req.query.new
 
-    newDetails = query == 'true' ? dataTrimmer(await User.find().sort({ _id: -1 }).limit(2)) :
-      dataTrimmer(await User.find())
+    // newDetails = query == 'true' ? dataTrimmer(await User.find().sort({ _id: -1 }).limit(2)) :
+    //   dataTrimmer(await User.find())
+    newDetails = query == 'true' ? await User.find().sort({ _id: -1 }).limit(2).select('-password -__v') :
+      await User.find().select('-password -__v')
 
     if (!newDetails) return res.status(404).json('Users not found.')
     return res.status(200).json(newDetails)
@@ -24,12 +26,12 @@ const getAllUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id)
+    const user = await User.findById(req.params.id).select('-password -__v')
 
     if (!user) return res.status(404).json('User not found.')
 
-    const { password, __v, ...others } = user._doc
-    return res.status(200).json(others)
+    // const { password, __v, ...others } = user._doc
+    return res.status(200).json(user)
 
   } catch (error) {
     return res.status(500).json(error)
@@ -46,7 +48,7 @@ const updateUser = async (req, res) => {
 
     const updatedUser = await User.findByIdAndUpdate(req.params.id, {
       $set: req.body
-    }, { new: true })
+    }, { new: true }).select('-password -__v')
 
     if (!updatedUser) return res.status(404).json('User not found.')
     return res.status(201).json(updatedUser)
